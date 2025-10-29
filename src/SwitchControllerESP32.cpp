@@ -1,18 +1,18 @@
 /**
   @file    SwitchControllerESP32.cpp
-  @author  interimadd,ろっこく
+  @author  interimadd,rokkoku
   @Improved by sorasen2020
-  @brief   よく使うSwitchへの入力をまとめたライブラリ
+  @brief   A library that combines commonly used Switch inputs
   @version 0.2
   @date    2023-1-29
 */
 #include "SwitchControllerESP32.h"
 
-// ボタンを押してから離すまでの時間
+// Time from pressing to releasing a button
 const uint16_t BUTTON_PUSHING_MSEC = 40;
 
 /**
-  @brief Switchコントローラーの初期化
+  @brief Initialize the Switch controller
 */
 void switchcontrolleresp32_init(void)
 {
@@ -21,8 +21,8 @@ void switchcontrolleresp32_init(void)
 }
 
 /**
-  @brief Switchコントローラーの初期化
-  @param button_pushing_msec        ボタンを押してから離すまでの時間
+  @brief Initialize the Switch controller
+  @param button_pushing_msec        Time from pressing to releasing a button
 */
 void switchcontrolleresp32_init(uint16_t button_pushing_msec)
 {
@@ -31,7 +31,7 @@ void switchcontrolleresp32_init(uint16_t button_pushing_msec)
 }
 
 /**
-  @brief Switchコントローラーの入力リセット
+  @brief Reset all Switch controller inputs
 */
 void switchcontrolleresp32_reset(void)
 {
@@ -40,11 +40,11 @@ void switchcontrolleresp32_reset(void)
 }
 
 /**
-  @brief Switchコントローラーのボタンを押す
+  @brief Press a Switch controller button
 
-  @param button                   押すボタン
-  @param delay_after_pushing_msec ボタンを押し終えた後の待ち時間
-  @param loop_num                 ボタンを押す回数
+  @param button                   Button to press
+  @param delay_after_pushing_msec Delay after releasing the button
+  @param loop_num                 Number of times to press the button
 */
 void pushButton(Button button, int delay_after_pushing_msec, int loop_num = 1)
 {
@@ -58,12 +58,12 @@ void pushButton(Button button, int delay_after_pushing_msec, int loop_num = 1)
 }
 
 /**
-  @brief Switchコントローラーのボタンを押す
+  @brief Press a Switch controller button
 
-  @param button                   押すボタン
-  @param pushing_time_msec        ボタンを押す時間の長さ
-  @param delay_after_pushing_msec ボタンを押し終えた後の待ち時間
-  @param loop_num                 ボタンを押す回数
+  @param button                   Button to press
+  @param pushing_time_msec        Duration to hold the button
+  @param delay_after_pushing_msec Delay after releasing the button
+  @param loop_num                 Number of times to press the button
 */
 void pushButton2(Button button, int pushing_time_msec, int delay_after_pushing_msec, int loop_num = 1)
 {
@@ -77,11 +77,11 @@ void pushButton2(Button button, int pushing_time_msec, int delay_after_pushing_m
 }
 
 /**
-  @brief Switchコントローラーの矢印ボタンを押す
+  @brief Press a D-pad (directional) button
 
-  @param button                   押す矢印ボタン
-  @param delay_after_pushing_msec ボタンを押し終えた後の待ち時間
-  @param loop_num                 ボタンを押す回数
+  @param button                   D-pad button to press
+  @param delay_after_pushing_msec Delay after releasing the button
+  @param loop_num                 Number of times to press the button
 */
 void pushHatButton(Hat button, int delay_after_pushing_msec, int loop_num = 1)
 {
@@ -95,10 +95,10 @@ void pushHatButton(Hat button, int delay_after_pushing_msec, int loop_num = 1)
 }
 
 /**
-  @brief Switchコントローラーの矢印ボタンを指定時間の間押し続ける
+  @brief Hold a D-pad button for a specified duration
 
-  @param button            押す矢印ボタン
-  @param pushing_time_msec ボタンを押す時間の長さ
+  @param button            D-pad button to press
+  @param pushing_time_msec Duration to hold the button
 */
 void pushHatButtonContinuous(Hat button, int pushing_time_msec)
 {
@@ -109,11 +109,11 @@ void pushHatButtonContinuous(Hat button, int pushing_time_msec)
 }
 
 /**
-  @brief Switchコントローラーの左スティックを指定時間の間押し続ける
+  @brief Hold the left stick in a specified direction
 
-  @param Lstick                傾ける方向
-  @param tilt_time_msec        ボタンを押す時間の長さ
-  @param delay_after_tilt_msec ボタンを押し終えた後の待ち時間
+  @param Lstick                Direction to tilt the stick
+  @param tilt_time_msec        Duration to hold the tilt
+  @param delay_after_tilt_msec Delay after releasing the stick
 */
 void UseLStick(LS Lstick, int tilt_time_msec, int delay_after_tilt_msec)
 {
@@ -142,11 +142,11 @@ void UseLStick(LS Lstick, int tilt_time_msec, int delay_after_tilt_msec)
 }
 
 /**
-  @brief Switchコントローラーの右スティックを指定時間の間押し続ける
+  @brief Hold the right stick in a specified direction
 
-  @param Rstick                傾ける方向
-  @param tilt_time_msec        ボタンを押す時間の長さ
-  @param delay_after_tilt_msec ボタンを押し終えた後の待ち時間
+  @param Rstick                Direction to tilt the stick
+  @param tilt_time_msec        Duration to hold the tilt
+  @param delay_after_tilt_msec Delay after releasing the stick
 */
 void UseRStick(RS Rstick, int tilt_time_msec, int delay_after_tilt_msec)
 {
@@ -174,27 +174,27 @@ void UseRStick(RS Rstick, int tilt_time_msec, int delay_after_tilt_msec)
   tiltJoystick(lx_per, ly_per, rx_per, ry_per, tilt_time_msec, delay_after_tilt_msec);
 }
 
-/* Lスティックを傾ける関数 */
+/* Function to tilt the left stick */
 /**
-  @brief Switchコントローラーの矢印ボタンを指定時間の間押し続ける(deg)
+  @brief Tilt the left stick in a specified angle (degrees)
 
-  @param direction_deg         傾ける方向(deg)
-  @param power                 傾き具合(0～1)
-  @param holdtime              スティックを倒し続ける時間
-  @param delay_after_tilt_msec スティックを倒した後の待ち時間
+  @param direction_deg         Direction to tilt (in degrees)
+  @param power                 Tilt magnitude (0 to 1)
+  @param holdtime             Duration to hold the tilt
+  @param delay_after_tilt_msec Delay after releasing the stick
 */
 void TiltLeftStick(int direction_deg, double power, int holdtime, int delaytime)
 {
-  double rad = (double)direction_deg * PI / 180.0; // 弧度法(ラジアン)変換
+  double rad = (double)direction_deg * PI / 180.0; // Convert degrees to radians
   //int x, y;
   int lx_per;
   int ly_per;
   lx_per = (double)sin(rad) * power * 100;
   ly_per = (double) - 1 * cos(rad) * power * 100;
   SwitchController().setStickTiltRatio(lx_per, ly_per, 0, 0);
-  if (holdtime > 0) { // holdtime=0のときは押しっぱなし。
+  if (holdtime > 0) { // If holdtime=0, the stick remains tilted
     delay(holdtime);
-    //SwitchControlLibrary().MoveLeftStick(128, 128); // 傾きを直す
+    //SwitchControlLibrary().MoveLeftStick(128, 128); // Reset stick position
     SwitchController().setStickTiltRatio(0, 0, 0, 0);
   }
   if (delaytime > 0) delay(delaytime);
@@ -202,14 +202,14 @@ void TiltLeftStick(int direction_deg, double power, int holdtime, int delaytime)
 }
 
 /**
-  @brief Switchのジョイスティックの倒し量を設定する
+  @brief Set the tilt amount for the joysticks
 
-  @param lx_per                LスティックのX方向倒し量[％] -100~100の範囲で設定
-  @param ly_per                LスティックのY方向倒し量[％] -100~100の範囲で設定
-  @param rx_per                RスティックのX方向倒し量[％] -100~100の範囲で設定
-  @param ry_per                RスティックのY方向倒し量[％] -100~100の範囲で設定
-  @param tilt_time_msec        スティックを倒し続ける時間
-  @param delay_after_tilt_msec スティックを倒した後の待ち時間
+  @param lx_per                Left stick X-axis tilt percentage (-100 to 100)
+  @param ly_per                Left stick Y-axis tilt percentage (-100 to 100)
+  @param rx_per                Right stick X-axis tilt percentage (-100 to 100)
+  @param ry_per                Right stick Y-axis tilt percentage (-100 to 100)
+  @param tilt_time_msec        Duration to hold the tilt
+  @param delay_after_tilt_msec Delay after releasing the sticks
 */
 void tiltJoystick(int lx_per, int ly_per, int rx_per, int ry_per, int tilt_time_msec, int delay_after_tilt_msec)
 {
