@@ -72,15 +72,15 @@ const struct {
   const char* shortcut;
   Hat direction;
 } hatTests[] = {
-  {"UP", "u", Hat::UP},
-  {"UP_RIGHT", "ur", Hat::UP_RIGHT},
-  {"RIGHT", "r", Hat::RIGHT},
-  {"RIGHT_DOWN", "rd", Hat::RIGHT_DOWN},
-  {"DOWN", "d", Hat::DOWN},
-  {"DOWN_LEFT", "dl", Hat::DOWN_LEFT},
-  {"LEFT", "l", Hat::LEFT},
-  {"LEFT_UP", "lu", Hat::LEFT_UP},
-  {"CENTER", "c", Hat::CENTER}
+  {"UP", "du", Hat::UP},           // d prefix for D-pad
+  {"UP_RIGHT", "dur", Hat::UP_RIGHT},
+  {"RIGHT", "dr", Hat::RIGHT},
+  {"RIGHT_DOWN", "drd", Hat::RIGHT_DOWN},
+  {"DOWN", "dd", Hat::DOWN},
+  {"DOWN_LEFT", "ddl", Hat::DOWN_LEFT},
+  {"LEFT", "dl", Hat::LEFT},
+  {"LEFT_UP", "dlu", Hat::LEFT_UP},
+  {"CENTER", "dc", Hat::CENTER}
 };
 
 const int NUM_BUTTON_TESTS = sizeof(buttonTests) / sizeof(buttonTests[0]);
@@ -110,7 +110,7 @@ void printHelp() {
     Serial.print(" or ");
     Serial.println(buttonTests[i].shortcut);
   }
-  Serial.println("\nHat Directions:");
+  Serial.println("\nD-pad Directions (all shortcuts start with 'd'):");
   for (int i = 0; i < NUM_HAT_TESTS; i++) {
     Serial.print("  ");
     Serial.print(hatTests[i].name);
