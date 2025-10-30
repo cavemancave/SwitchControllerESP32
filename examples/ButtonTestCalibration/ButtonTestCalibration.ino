@@ -5,28 +5,25 @@ https://opensource.org/licenses/mit-license.php
 */
 
 /*
-Nintendo Switch Controller Test with Auto/Manual Modes
+Nintendo Switch Controller Auto Test and Calibration
 
-Modes:
-1. Auto Mode (default):
-   - Automatically tests hat directions first, then normal buttons
-   - Skips HOME and CAPTURE buttons (not testable in Test mode)
-   - Tests sequence: Hat directions -> Regular buttons (A,B,X,Y,L,R,etc)
-   - Any serial input switches to Manual Mode
+This example automatically tests controller buttons and hat directions in sequence.
+Perfect for calibrating and verifying controller functionality.
 
-2. Manual Mode:
-   - Control any button/hat through Serial, including HOME/CAPTURE
-   - Send full name or shortcut to press a button (e.g., "A" or "a")
-   - Type "help" to see all commands
-   - Type "auto" to return to Auto Mode
+Features:
+- Automatically tests hat directions first, then normal buttons
+- Skips HOME and CAPTURE buttons (not testable in Test Controller mode)
+- Tests sequence: Hat directions -> Regular buttons (A,B,X,Y,L,R,etc)
+- Serial output shows which button/direction is being tested
+- Continuous loop for ongoing calibration
 
 Setup:
 1. Set Nintendo Switch to Test Controller Buttons mode
    Home -> System Settings -> Controllers and Sensors -> 
    Test Input Devices -> Test Controller Buttons
 2. Connect ESP32 USB port
-3. Open Serial Monitor (115200 baud)
-4. Commands will be shown in Manual Mode
+3. Open Serial Monitor (115200 baud) to see test progress
+4. Watch the Switch screen to verify each button press
 
 */
 
@@ -40,52 +37,45 @@ void loop(){}
 #endif /* ARDUINO_USB_MODE */
 
 // Global state control
-bool isAutoMode = true;     // true = auto test sequence, false = manual button control
 unsigned long lastButtonTime = 0;  // For non-blocking button test sequence
 int currentButtonIndex = 0;  // Keep track of which button we're testing
 
 // Auto-test buttons (excluding HOME and CAPTURE which can't be tested in Test mode)
 const struct {
   const char* name;
-  const char* shortcut;
   Button button;
-  bool includeInAutoTest;  // Whether to include in auto test sequence
 } buttonTests[] = {
-  {"Y", "y", Button::Y, true},
-  {"B", "b", Button::B, true},
-  {"A", "a", Button::A, true},
-  {"X", "x", Button::X, true},
-  {"L", "l", Button::L, true},
-  {"R", "r", Button::R, true},
-  {"ZL", "zl", Button::ZL, true},
-  {"ZR", "zr", Button::ZR, true},
-  {"MINUS", "-", Button::MINUS, true},
-  {"PLUS", "+", Button::PLUS, true},
-  {"LCLICK", "lc", Button::LCLICK, true},
-  {"RCLICK", "rc", Button::RCLICK, true},
-  {"HOME", "h", Button::HOME, false},      // Skip in auto test
-  {"CAPTURE", "c", Button::CAPTURE, false} // Skip in auto test
+  {"Y", Button::Y},
+  {"B", Button::B},
+  {"A", Button::A},
+  {"X", Button::X},
+  {"L", Button::L},
+  {"R", Button::R},
+  {"ZL", Button::ZL},
+  {"ZR", Button::ZR},
+  {"MINUS", Button::MINUS},
+  {"PLUS", Button::PLUS},
+  {"LCLICK", Button::LCLICK},
+  {"RCLICK", Button::RCLICK}
 };
 
 const struct {
   const char* name;
-  const char* shortcut;
   Hat direction;
 } hatTests[] = {
-  {"UP", "du", Hat::UP},           // d prefix for D-pad
-  {"UP_RIGHT", "dur", Hat::UP_RIGHT},
-  {"RIGHT", "dr", Hat::RIGHT},
-  {"RIGHT_DOWN", "drd", Hat::RIGHT_DOWN},
-  {"DOWN", "dd", Hat::DOWN},
-  {"DOWN_LEFT", "ddl", Hat::DOWN_LEFT},
-  {"LEFT", "dl", Hat::LEFT},
-  {"LEFT_UP", "dlu", Hat::LEFT_UP},
-  {"CENTER", "dc", Hat::CENTER}
+  {"UP", Hat::UP},
+  {"UP_RIGHT", Hat::UP_RIGHT},
+  {"RIGHT", Hat::RIGHT},
+  {"RIGHT_DOWN", Hat::RIGHT_DOWN},
+  {"DOWN", Hat::DOWN},
+  {"DOWN_LEFT", Hat::DOWN_LEFT},
+  {"LEFT", Hat::LEFT},
+  {"LEFT_UP", Hat::LEFT_UP},
+  {"CENTER", Hat::CENTER}
 };
 
 const int NUM_BUTTON_TESTS = sizeof(buttonTests) / sizeof(buttonTests[0]);
 const int NUM_HAT_TESTS = sizeof(hatTests) / sizeof(hatTests[0]);
-const int TOTAL_TESTS = NUM_BUTTON_TESTS + NUM_HAT_TESTS;
 
 
 void setup() {
@@ -96,127 +86,39 @@ void setup() {
   // Initialize Serial communication
   Serial.begin(115200);
   delay(100);
-  Serial.println("\nNintendo Switch Controller Tester");
-  Serial.println("Starting in Auto Mode...");
-  Serial.println("Send any character to enter Manual Mode");
-}
-
-void printHelp() {
-  Serial.println("\n=== Manual Mode Commands ===");
-  Serial.println("Buttons:");
-  for (int i = 0; i < NUM_BUTTON_TESTS; i++) {
-    Serial.print("  ");
-    Serial.print(buttonTests[i].name);
-    Serial.print(" or ");
-    Serial.println(buttonTests[i].shortcut);
-  }
-  Serial.println("\nD-pad Directions (all shortcuts start with 'd'):");
-  for (int i = 0; i < NUM_HAT_TESTS; i++) {
-    Serial.print("  ");
-    Serial.print(hatTests[i].name);
-    Serial.print(" or ");
-    Serial.println(hatTests[i].shortcut);
-  }
-  Serial.println("\nOther Commands:");
-  Serial.println("  auto   - Return to Auto Mode");
-  Serial.println("  help   - Show this help message");
-}
-
-void handleSerialInput() {
-  if (Serial.available()) {
-    // Any serial input in Auto Mode switches to Manual Mode
-    if (isAutoMode) {
-      isAutoMode = false;
-      Serial.println("\nSwitched to Manual Mode");
-      printHelp();
-      // Clear the input buffer
-      while (Serial.available()) Serial.read();
-      return;
-    }
-
-    String cmd = Serial.readStringUntil('\n');
-    cmd.trim();  // Remove any whitespace or newlines
-    
-    if (cmd == "auto") {
-      isAutoMode = true;
-      currentButtonIndex = 0; // Reset the sequence
-      Serial.println("Returning to Auto Mode...");
-    }
-    else if (cmd == "help") {
-      printHelp();
-    }
-    else {
-      // Try to match button or hat commands
-      bool found = false;
-      
-      // Check normal buttons
-      for (int i = 0; i < NUM_BUTTON_TESTS; i++) {
-        if (cmd == buttonTests[i].name || cmd == buttonTests[i].shortcut) {
-          Serial.print("Pressing button: ");
-          Serial.println(buttonTests[i].name);
-          pushButton(buttonTests[i].button, 1000, 1);
-          found = true;
-          break;
-        }
-      }
-      
-      // Check hat directions
-      if (!found) {
-        for (int i = 0; i < NUM_HAT_TESTS; i++) {
-          if (cmd == hatTests[i].name || cmd == hatTests[i].shortcut) {
-            Serial.print("Pressing hat direction: ");
-            Serial.println(hatTests[i].name);
-            pushHatButton(hatTests[i].direction, 1000, 1);
-            found = true;
-            break;
-          }
-        }
-      }
-      
-      if (!found) {
-        Serial.println("Unknown command. Type 'help' to see available commands.");
-      }
-    }
-    
-    // Clear any remaining characters
-    while (Serial.available()) Serial.read();
-  }
+  Serial.println("\nNintendo Switch Controller Auto Test");
+  Serial.println("====================================");
+  Serial.println("Starting automatic button test sequence...");
+  Serial.println("Test order: Hat directions first, then buttons");
+  Serial.println("Open Switch Test Controller mode to see results");
 }
 
 void loop() {
-  // Always check for serial commands first
-  handleSerialInput();
-
-  // Run automatic test sequence only in Auto Mode
-  if (isAutoMode) {
-    unsigned long currentTime = millis();
-    
-    // Wait at least 1000ms between button presses
-    if (currentTime - lastButtonTime >= 1000) {
-      if (currentButtonIndex < NUM_HAT_TESTS) {
-        // Test hat directions first
-        Serial.print("Testing hat direction: ");
-        Serial.println(hatTests[currentButtonIndex].name);
-        pushHatButton(hatTests[currentButtonIndex].direction, 1000, 1);
-      }
-      else if (currentButtonIndex < (NUM_HAT_TESTS + NUM_BUTTON_TESTS)) {
-        // Then test normal buttons (except HOME and CAPTURE)
-        int buttonIndex = currentButtonIndex - NUM_HAT_TESTS;
-        if (buttonTests[buttonIndex].includeInAutoTest) {
-          Serial.print("Testing button: ");
-          Serial.println(buttonTests[buttonIndex].name);
-          pushButton(buttonTests[buttonIndex].button, 1000, 1);
-        }
-      }
-      
-      currentButtonIndex++;
-      // Check if we've completed all tests
-      if (currentButtonIndex >= (NUM_HAT_TESTS + NUM_BUTTON_TESTS)) {
-        currentButtonIndex = 0; // Reset to start with hat directions
-        Serial.println("=== Test sequence complete, restarting... ===");
-      }
-      
-      lastButtonTime = currentTime;
+  unsigned long currentTime = millis();
+  
+  // Wait at least 1000ms between button presses
+  if (currentTime - lastButtonTime >= 1000) {
+    if (currentButtonIndex < NUM_HAT_TESTS) {
+      // Test hat directions first
+      Serial.print("Testing hat direction: ");
+      Serial.println(hatTests[currentButtonIndex].name);
+      pushHatButton(hatTests[currentButtonIndex].direction, 1000, 1);
     }
+    else if (currentButtonIndex < (NUM_HAT_TESTS + NUM_BUTTON_TESTS)) {
+      // Then test normal buttons
+      int buttonIndex = currentButtonIndex - NUM_HAT_TESTS;
+      Serial.print("Testing button: ");
+      Serial.println(buttonTests[buttonIndex].name);
+      pushButton(buttonTests[buttonIndex].button, 1000, 1);
+    }
+    
+    currentButtonIndex++;
+    // Check if we've completed all tests
+    if (currentButtonIndex >= (NUM_HAT_TESTS + NUM_BUTTON_TESTS)) {
+      currentButtonIndex = 0; // Reset to start with hat directions
+      Serial.println("=== Test sequence complete, restarting... ===");
+    }
+    
+    lastButtonTime = currentTime;
   }
 }
